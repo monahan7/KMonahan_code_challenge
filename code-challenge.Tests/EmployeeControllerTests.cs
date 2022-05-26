@@ -160,19 +160,19 @@ namespace code_challenge.Tests.Integration
 		[TestMethod]
 		public void CreateCompensation_Returns_Created()
 		{
-			// Arrange
-			var employee = new Employee()
-			{
-				EmployeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f",
-				FirstName = "John",
-				LastName = "Lennon",
-				Position = "Development Manager",
-				Department = "Engineering",
-			};
+			string EmployeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
 
+			// Arrange
 			var compensation = new Compensation()
 			{
-				employee = employee,
+				employee = new Employee()
+				{
+					EmployeeId = EmployeeId,
+					FirstName = "John",
+					LastName = "Lennon",
+					Position = "Development Manager",
+					Department = "Engineering",
+				},
 				salary = 1500,
 				effectiveDate = System.DateTime.Now,
 			};
@@ -197,7 +197,29 @@ namespace code_challenge.Tests.Integration
 			Assert.AreEqual(compensation.employee.LastName, newCompensation.employee.LastName);
 			Assert.AreEqual(compensation.employee.Department, newCompensation.employee.Department);
 			Assert.AreEqual(compensation.employee.Position, newCompensation.employee.Position);
+
+			// Arrange
+
+			// Execute
+			var getRequestTask = _httpClient.GetAsync($"api/employee/GetCompensation/{EmployeeId}");
+			response = getRequestTask.Result;
+
+			// Assert
+			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+			newCompensation = response.DeserializeContent<Compensation>();
+			Assert.IsNotNull(newCompensation.CompensationId);
+			Assert.AreEqual(compensation.salary, newCompensation.salary);
+			Assert.AreEqual(compensation.effectiveDate, newCompensation.effectiveDate);
+
+			Assert.IsNotNull(newCompensation.employee.EmployeeId);
+			Assert.AreEqual(compensation.employee.FirstName, newCompensation.employee.FirstName);
+			Assert.AreEqual(compensation.employee.LastName, newCompensation.employee.LastName);
+			Assert.AreEqual(compensation.employee.Department, newCompensation.employee.Department);
+			Assert.AreEqual(compensation.employee.Position, newCompensation.employee.Position);
+
 		}
+
 
 
 	}
