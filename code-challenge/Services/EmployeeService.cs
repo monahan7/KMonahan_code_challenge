@@ -1,0 +1,94 @@
+﻿using System;
+using challenge.Models;
+using challenge.Repositories;
+using Microsoft.Extensions.Logging;
+
+namespace challenge.Services
+{
+	public class EmployeeService : IEmployeeService
+	{
+		private readonly IEmployeeRepository _employeeRepository;
+		private readonly ILogger<EmployeeService> _logger;
+
+		public EmployeeService(ILogger<EmployeeService> logger, IEmployeeRepository employeeRepository)
+		{
+			_employeeRepository = employeeRepository;
+			_logger = logger;
+		}
+
+		public Employee Create(Employee employee)
+		{
+			if (employee != null)
+			{
+				_employeeRepository.Add(employee);
+				_employeeRepository.SaveAsync().Wait();
+			}
+
+			return employee;
+		}
+
+		public Employee GetById(string id)
+		{
+			if (!String.IsNullOrEmpty(id))
+			{
+				return _employeeRepository.GetById(id);
+			}
+
+			return null;
+		}
+
+		public Employee Replace(Employee originalEmployee, Employee newEmployee)
+		{
+			if (originalEmployee != null)
+			{
+				_employeeRepository.Remove(originalEmployee);
+				if (newEmployee != null)
+				{
+					// ensure the original has been removed, otherwise EF will complain another entity w/ same id already exists
+					_employeeRepository.SaveAsync().Wait();
+
+					_employeeRepository.Add(newEmployee);
+					// overwrite the new id with previous employee id
+					newEmployee.EmployeeId = originalEmployee.EmployeeId;
+				}
+				_employeeRepository.SaveAsync().Wait();
+			}
+
+			return newEmployee;
+		}
+
+		#region KMONAHAN: ReportingStructure
+		public ReportingStructure GetReportingStructure(String id)
+		{
+			if (!String.IsNullOrEmpty(id))
+			{
+				return _employeeRepository.GetReportingStructure(id);
+			}
+			return null;
+		}
+		#endregion
+
+		#region KMONAHAN: Compensation
+		public Compensation CreateCompensation(Compensation compensation)
+		{
+			if (compensation != null)
+			{
+				_employeeRepository.AddCompensation(compensation);
+				_employeeRepository.SaveAsync().Wait();
+			}
+
+			return compensation;
+		}
+
+		public Compensation GetCompensationByEmployeeId(String id)
+		{
+			if (!String.IsNullOrEmpty(id))
+			{
+				return _employeeRepository.GetCompensationByEmployeeId(id);
+			}
+			return null;
+		}
+		#endregion
+
+	}
+}
