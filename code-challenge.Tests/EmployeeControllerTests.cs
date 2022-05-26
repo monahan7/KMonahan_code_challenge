@@ -160,14 +160,12 @@ namespace code_challenge.Tests.Integration
 		[TestMethod]
 		public void CreateCompensation_Returns_Created()
 		{
-			string EmployeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
-
 			// Arrange
 			var compensation = new Compensation()
 			{
 				employee = new Employee()
 				{
-					EmployeeId = EmployeeId,
+					EmployeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f",
 					FirstName = "John",
 					LastName = "Lennon",
 					Position = "Development Manager",
@@ -198,19 +196,38 @@ namespace code_challenge.Tests.Integration
 			Assert.AreEqual(compensation.employee.Department, newCompensation.employee.Department);
 			Assert.AreEqual(compensation.employee.Position, newCompensation.employee.Position);
 
+		}
+
+		[TestMethod]
+		public void GetCompensation_Returns_Ok()
+		{
 			// Arrange
+			string EmployeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
+
+			var compensation = new Compensation()
+			{
+				employee = new Employee()
+				{
+					EmployeeId = EmployeeId,
+					FirstName = "John",
+					LastName = "Lennon",
+					Position = "Development Manager",
+					Department = "Engineering",
+				},
+				salary = 1500,
+
+			};
 
 			// Execute
 			var getRequestTask = _httpClient.GetAsync($"api/employee/GetCompensation/{EmployeeId}");
-			response = getRequestTask.Result;
+			var response = getRequestTask.Result;
 
 			// Assert
 			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
-			newCompensation = response.DeserializeContent<Compensation>();
+			var newCompensation = response.DeserializeContent<Compensation>();
 			Assert.IsNotNull(newCompensation.CompensationId);
 			Assert.AreEqual(compensation.salary, newCompensation.salary);
-			Assert.AreEqual(compensation.effectiveDate, newCompensation.effectiveDate);
 
 			Assert.IsNotNull(newCompensation.employee.EmployeeId);
 			Assert.AreEqual(compensation.employee.FirstName, newCompensation.employee.FirstName);
